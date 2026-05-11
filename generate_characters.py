@@ -1,12 +1,11 @@
 
 import os
 import requests
-import json
+import urllib.parse
 
 # 配置
-API_TOKEN = "pst-D9XlP0HNguUtdenvNl8dzVBitCgJlmjHtpT0oY3xHjIqvgIq5TmgyfSWUhJLvvDJ"
 IMAGE_DIR = "/workspace/Galgame_Asset/image"
-BASE_URL = "https://image.novelai.net"
+TEXT_TO_IMAGE_URL = "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image"
 
 # 角色提示词定义
 characters = [
@@ -58,39 +57,14 @@ characters = [
 os.makedirs(IMAGE_DIR, exist_ok=True)
 
 def generate_image(prompt, output_path):
-    """调用NovelAI API生成图片"""
-    headers = {
-        "Authorization": f"Bearer {API_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    
-    # NovelAI V3 API 格式
-    payload = {
-        "input": prompt,
-        "model": "nai-diffusion-3",
-        "action": "generate",
-        "parameters": {
-            "width": 512,
-            "height": 768,
-            "scale": 11,
-            "sampler": "k_euler_ancestral",
-            "steps": 28,
-            "n_samples": 1,
-            "seed": None,
-            "sm": True,
-            "sm_dyn": True,
-            "noise": 0.1,
-            "negative_prompt": "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry"
-        }
-    }
-    
+    """调用 text_to_image API 生成图片"""
     try:
-        response = requests.post(
-            f"{BASE_URL}/ai/generate-image",
-            headers=headers,
-            json=payload,
-            timeout=60
-        )
+        # 编码提示词并构建 URL
+        encoded_prompt = urllib.parse.quote(prompt)
+        url = f"{TEXT_TO_IMAGE_URL}?prompt={encoded_prompt}&image_size=portrait_4_3"
+        
+        # 下载图片
+        response = requests.get(url, timeout=120)
         
         if response.status_code == 200:
             # 保存图片
